@@ -77,6 +77,16 @@
         android:ems="8"
         android:hint="url"/>
 
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="42dp"
+        android:maxHeight="42dp"
+        android:scaleType="fitCenter"
+
+        />
+
     <!--    <ScrollView-->
     <!--        android:layout_width="match_parent"-->
     <!--        android:layout_height="match_parent"-->

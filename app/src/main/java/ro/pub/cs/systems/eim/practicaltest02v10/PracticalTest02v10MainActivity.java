@@ -1,9 +1,14 @@
 package ro.pub.cs.systems.eim.practicaltest02v10;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -14,6 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
@@ -23,6 +29,7 @@ import java.net.URL;
 import java.util.HashMap;
 public class PracticalTest02v10MainActivity extends AppCompatActivity {
     private EditText port, name, type, ability, url;
+    private ImageView image;
     Button connectBtn;
 
 //    private static EditText serverResponse;
@@ -42,6 +49,7 @@ public class PracticalTest02v10MainActivity extends AppCompatActivity {
         type = findViewById(R.id.type);
         ability = findViewById(R.id.ability);
         url = findViewById(R.id.url);
+//        image = findViewById(R.id.image);
 
         connectBtn = findViewById(R.id.connect);
 //        connectBtn.setOnClickListener(v -> {
@@ -99,10 +107,10 @@ public class PracticalTest02v10MainActivity extends AppCompatActivity {
 
 //                String name = in.readLine();
                 String type = new JSONObject(response).getJSONArray("types").getJSONObject(0).getJSONObject("type").getString("name");
-                String ability = new JSONObject(response).getJSONArray("abilities").getJSONObject(0).getString("ability");
+                String ability = new JSONObject(response).getJSONArray("abilities").getJSONObject(0).getJSONObject("ability").getString("name");
                 String url = new JSONObject(response).getJSONObject("sprites").getString("front_default");
-//                out.println(type);
-//                out.println(ability);
+                out.println(type);
+                out.println(ability);
                 out.println(url);
 
                 socket.close();
@@ -152,11 +160,21 @@ public class PracticalTest02v10MainActivity extends AppCompatActivity {
                     out.println(option);
                     BufferedReader reader = new BufferedReader(new
                             InputStreamReader(socket.getInputStream()));
-                    String response = reader.readLine();
-                    Log.d("[CLIENT]", response);
-//                    PracticalTest02v10MainActivity.this.runOnUiThread(() -> {
-//                        serverResponse.setText(response);
-//                    });
+                    String typeUI = reader.readLine();
+                    String abilityUI = reader.readLine();
+                    String urlUI = reader.readLine();
+                    PracticalTest02v10MainActivity.this.runOnUiThread(() -> {
+                        type.setText(typeUI);
+                    });
+                    PracticalTest02v10MainActivity.this.runOnUiThread(() -> {
+                        ability.setText(abilityUI);
+                    });
+
+                    PracticalTest02v10MainActivity.this.runOnUiThread(() -> {
+                        new DownloadImageTask((ImageView) findViewById(R.id.image))
+                                .execute(urlUI);
+                        ability.setText(abilityUI);
+                    });
                     socket.close();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -164,4 +182,30 @@ public class PracticalTest02v10MainActivity extends AppCompatActivity {
             }).start();
         }
     }
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
+
 }
